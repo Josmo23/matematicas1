@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen de Cálculo Integral</title>
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary: #1a3c5e;
+            --accent: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+            --radius: 16px;
+            --transition: 0.2s ease;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+        body.cheater-mode {
+            background: #1a0000 !important;
+        }
+        .container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 40px 36px;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes pulseRed {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 0 18px rgba(220, 38, 38, 0);
+            }
+        }
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            20%,
+            60% {
+                transform: translateX(-8px);
+            }
+            40%,
+            80% {
+                transform: translateX(8px);
+            }
+        }
+        .hidden {
+            display: none !important;
+        }
+        .exam-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .exam-header .logo-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .exam-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.3px;
+        }
+        .exam-header .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .timer-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #f8fafc;
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            padding: 10px 22px;
+            margin-bottom: 24px;
+            transition: all 0.3s;
+        }
+        .timer-bar.warning {
+            border-color: var(--warning);
+            background: #fffbeb;
+            animation: pulseRed 1.2s infinite;
+        }
+        .timer-bar.danger {
+            border-color: var(--danger);
+            background: #fef2f2;
+            animation: pulseRed 0.7s infinite;
+        }
+        .timer-icon {
+            font-size: 22px;
+        }
+        .timer-display {
+            font-size: 2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            letter-spacing: 2px;
+            color: var(--primary);
+            transition: color 0.3s;
+        }
+        .timer-bar.warning .timer-display {
+            color: #b45309;
+        }
+        .timer-bar.danger .timer-display {
+            color: var(--danger);
+        }
+        .progress-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        .progress-dots {
+            display: flex;
+            gap: 7px;
+        }
+        .progress-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #9ca3af;
+            transition: all 0.3s;
+        }
+        .progress-dot.active {
+            background: var(--accent);
+            color: #fff;
+            transform: scale(1.15);
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.4);
+        }
+        .progress-dot.answered {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+        .progress-dot.expired {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        .question-card {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+        .question-topic {
+            display: inline-block;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .question-text .math {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.25rem;
+            letter-spacing: 0.3px;
+        }
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: #fff;
+            user-select: none;
+            font-size: 1rem;
+        }
+        .option-item:hover {
+            border-color: #93c5fd;
+            background: #f0f7ff;
+            transform: translateX(3px);
+        }
+        .option-item.selected {
+            border-color: var(--accent);
+            background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            font-weight: 600;
+        }
+        .option-letter {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            transition: all var(--transition);
+        }
+        .option-item.selected .option-letter {
+            background: var(--accent);
+            color: #fff;
+        }
+        .option-text {
+            flex: 1;
+        }
+        .option-text .math {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-style: italic;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 28px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition);
+            letter-spacing: 0.2px;
+            width: 100%;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(37, 99, 235, 0.4);
+        }
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .btn-outline {
+            background: #fff;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+        .btn-outline:hover {
+            background: #eff6ff;
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+        .input-group input {
+            width: 100%;
+            padding: 13px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all var(--transition);
+            background: #fafafa;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+            background: #fff;
+        }
+        .login-error {
+            color: var(--danger);
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.9rem;
+            animation: shake 0.5s;
+        }
+        .results-screen {
+            text-align: center;
+        }
+        .results-score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin: 0 auto 20px;
+            font-weight: 700;
+            border: 6px solid;
+        }
+        .results-score-circle.pass {
+            border-color: var(--success);
+            background: #f0fdf4;
+            color: var(--success);
+        }
+        .results-score-circle.fail {
+            border-color: var(--danger);
+            background: #fef2f2;
+            color: var(--danger);
+        }
+        .results-score-circle .score-number {
+            font-size: 3rem;
+            line-height: 1;
+        }
+        .results-score-circle .score-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .results-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+        .results-detail-table th,
+        .results-detail-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .results-detail-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-icon {
+            font-size: 1.3rem;
+            text-align: center;
+        }
+        .result-icon.correct {
+            color: var(--success);
+        }
+        .result-icon.wrong {
+            color: var(--danger);
+        }
+        .student-info-badge {
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .cheater-screen {
+            text-align: center;
+            animation: shake 0.6s;
+        }
+        .cheater-screen .cheater-icon {
+            font-size: 100px;
+            display: block;
+            animation: pulseRed 1s infinite;
+        }
+        .cheater-screen h2 {
+            font-size: 2.5rem;
+            color: var(--danger);
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin: 10px 0;
+        }
+        .cheater-screen p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+        .cheater-screen .teacher-note {
+            font-weight: 700;
+            color: var(--danger);
+            font-size: 1.2rem;
+            margin-top: 16px;
+        }
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                max-width: 100%;
+                padding: 20px;
+            }
+            .btn,
+            .timer-bar,
+            .progress-row,
+            .no-print {
+                display: none !important;
+            }
+            .results-screen {
+                page-break-inside: avoid;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px 16px;
+                border-radius: 12px;
+            }
+            .timer-display {
+                font-size: 1.5rem;
+            }
+            .question-text {
+                font-size: 1rem;
+            }
+            .option-item {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+            .progress-dot {
+                width: 22px;
+                height: 22px;
+                font-size: 0.65rem;
+            }
+            .results-score-circle {
+                width: 120px;
+                height: 120px;
+            }
+            .results-score-circle .score-number {
+                font-size: 2.2rem;
+            }
+            .cheater-screen h2 {
+                font-size: 1.8rem;
+            }
+            .cheater-screen .cheater-icon {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <div id="loginScreen">
+            <div class="exam-header">
+                <span class="logo-icon">📐</span>
+                <h1>Examen de Cálculo Integral</h1>
+                <p class="subtitle">Temas: Integral de potencia · Potencia fraccionaria · Logaritmo natural · Seno y coseno</p>
+            </div>
+            <form class="login-form" id="loginForm" autocomplete="off">
+                <div class="input-group">
+                    <label for="inputPassword">🔒 Contraseña del examen</label>
+                    <input type="password" id="inputPassword" placeholder="Ingresa la contraseña" required>
+                </div>
+                <div class="input-group">
+                    <label for="inputNombre">👤 Nombre(s)</label>
+                    <input type="text" id="inputNombre" placeholder="Ej. Juan Carlos" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label for="inputApellido">👤 Apellido(s)</label>
+                    <input type="text" id="inputApellido" placeholder="Ej. García López" required autocomplete="off">
+                </div>
+                <div id="loginError" class="login-error hidden"></div>
+                <button type="submit" class="btn btn-primary">▶ Iniciar Examen</button>
+            </form>
+        </div>
+        <div id="examScreen" class="hidden">
+            <div class="exam-header">
+                <span class="logo-icon">📝</span>
+                <h1>Examen en Curso</h1>
+                <p class="subtitle" id="examStudentName"></p>
+            </div>
+            <div class="timer-bar" id="timerBar">
+                <span class="timer-icon">⏱️</span>
+                <span class="timer-display" id="timerDisplay">10:00</span>
+                <span style="font-size:0.8rem;color:var(--text-light);">por pregunta</span>
+            </div>
+            <div class="progress-row">
+                <span>Progreso:</span>
+                <div class="progress-dots" id="progressDots"></div>
+                <span id="progressLabel">1 / 10</span>
+            </div>
+            <div class="question-card">
+                <span class="question-topic" id="questionTopic"></span>
+                <p class="question-text" id="questionText"></p>
+            </div>
+            <ul class="options-list" id="optionsList"></ul>
+            <button class="btn btn-primary" id="btnNext" disabled>➡ Siguiente pregunta</button>
+            <p style="text-align:center;margin-top:8px;font-size:0.8rem;color:var(--text-light);">
+                ⚠️ No cambies de pestaña ni cierres la página. Serás reprobado automáticamente.
+            </p>
+        </div>
+        <div id="resultsScreen" class="hidden results-screen">
+            <div class="exam-header">
+                <span class="logo-icon">📋</span>
+                <h1>Resultados del Examen</h1>
+            </div>
+            <div class="student-info-badge" id="resultsStudentName"></div>
+            <div class="results-score-circle" id="resultsScoreCircle">
+                <span class="score-number" id="resultsScoreNumber"></span>
+                <span class="score-label" id="resultsScoreLabel"></span>
+            </div>
+            <p style="font-size:1rem;color:var(--text-light);margin-bottom:16px;" id="resultsTimeUsed"></p>
+            <table class="results-detail-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tema</th>
+                        <th>Tu respuesta</th>
+                        <th>Correcta</th>
+                        <th>✓/✗</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody"></tbody>
+            </table>
+            <button class="btn btn-outline no-print" onclick="window.print()" style="margin-bottom:10px;">🖨️ Imprimir / Guardar PDF</button>
+            <button class="btn btn-primary no-print" onclick="location.reload()">🏠 Finalizar y volver al inicio</button>
+        </div>
+        <div id="cheaterScreen" class="hidden cheater-screen">
+            <span class="cheater-icon">🚫</span>
+            <h2>REPROBADO</h2>
+            <p>Se ha detectado un cambio de pestaña, cierre de la página o intento de hacer trampa.</p>
+            <p>El examen ha sido <strong>anulado automáticamente</strong>.</p>
+            <p class="teacher-note">⚠️ Favor de pasar con tu maestro.</p>
+            <p style="font-size:0.85rem;color:var(--text-light);margin-top:10px;" id="cheaterStudentInfo"></p>
+            <button class="btn btn-danger no-print" onclick="resetExamLock()" style="margin-top:16px;font-size:0.85rem;">
+                🔓 ¿Eres el maestro? Restablecer bloqueo
+            </button>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const _0x1a2b = atob('QWxtYXNhMjAyNg=='); // Contraseña ofuscada
+            const _0x3c4d = 600; // segundos por pregunta
+            const _0x5e6f = 10; // total preguntas
+            const _0x7a8b = 6; // puntuación aprobatoria
+
+            const _0x9c0d = [
+                { t: 'Integral de potencia', q: '¿Cuál es el resultado de <span class="math">∫ x³ dx</span>?', o: ['<span class="math">x⁴/4 + C</span>', '<span class="math">3x² + C</span>', '<span class="math">x⁴ + C</span>', '<span class="math">x³/3 + C</span>'], c: 0 },
+                { t: 'Integral de potencia', q: '¿Cuál es el resultado de <span class="math">∫ x⁵ dx</span>?', o: ['<span class="math">5x⁴ + C</span>', '<span class="math">x⁶/6 + C</span>', '<span class="math">x⁶ + C</span>', '<span class="math">x⁵/5 + C</span>'], c: 1 },
+                { t: 'Integral de potencia', q: '¿Cuál es el resultado de <span class="math">∫ 4x³ dx</span>?', o: ['<span class="math">x⁴ + C</span>', '<span class="math">12x² + C</span>', '<span class="math">4x⁴/4 + C</span>', '<span class="math">x⁴/4 + C</span>'], c: 0 },
+                { t: 'Integral de potencia', q: '¿Cuál es el resultado de <span class="math">∫ x dx</span>?', o: ['<span class="math">x + C</span>', '<span class="math">x²/2 + C</span>', '<span class="math">1 + C</span>', '<span class="math">2x + C</span>'], c: 1 },
+                { t: 'Integral de potencia', q: '¿Cuál es el resultado de <span class="math">∫ x⁻² dx</span>?', o: ['<span class="math">-x⁻¹ + C</span>', '<span class="math">-2x⁻³ + C</span>', '<span class="math">x⁻¹ + C</span>', '<span class="math">-1/x + C</span>'], c: 3 },
+                { t: 'Integral de potencia fraccionaria', q: '¿Cuál es el resultado de <span class="math">∫ √x dx</span>? (√x = x<sup>1/2</sup>)', o: ['<span class="math">(1/2)x⁻¹ᐟ² + C</span>', '<span class="math">(2/3)x³ᐟ² + C</span>', '<span class="math">√x + C</span>', '<span class="math">x³ᐟ²/3 + C</span>'], c: 1 },
+                { t: 'Integral de potencia fraccionaria', q: '¿Cuál es el resultado de <span class="math">∫ x¹ᐟ³ dx</span>?', o: ['<span class="math">(3/4)x⁴ᐟ³ + C</span>', '<span class="math">(1/3)x⁻²ᐟ³ + C</span>', '<span class="math">x⁴ᐟ³ + C</span>', '<span class="math">(4/3)x⁴ᐟ³ + C</span>'], c: 0 },
+                { t: 'Integral de potencia fraccionaria', q: '¿Cuál es el resultado de <span class="math">∫ x²ᐟ³ dx</span>?', o: ['<span class="math">(2/3)x⁻¹ᐟ³ + C</span>', '<span class="math">x⁵ᐟ³ + C</span>', '<span class="math">(3/5)x⁵ᐟ³ + C</span>', '<span class="math">(5/3)x⁵ᐟ³ + C</span>'], c: 2 },
+                { t: 'Integral de potencia fraccionaria', q: '¿Cuál es el resultado de <span class="math">∫ 1/√x dx</span>? (1/√x = x<sup>-1/2</sup>)', o: ['<span class="math">ln|√x| + C</span>', '<span class="math">-1/(2√x) + C</span>', '<span class="math">2√x + C</span>', '<span class="math">√x/2 + C</span>'], c: 2 },
+                { t: 'Integral de potencia fraccionaria', q: '¿Cuál es el resultado de <span class="math">∫ x³ᐟ² dx</span>?', o: ['<span class="math">(3/2)x¹ᐟ² + C</span>', '<span class="math">(2/5)x⁵ᐟ² + C</span>', '<span class="math">x⁵ᐟ² + C</span>', '<span class="math">(5/2)x⁵ᐟ² + C</span>'], c: 1 },
+                { t: 'Logaritmo natural', q: '¿Cuál es el resultado de <span class="math">∫ 1/x dx</span>?', o: ['<span class="math">x + C</span>', '<span class="math">ln|x| + C</span>', '<span class="math">1/x² + C</span>', '<span class="math">eˣ + C</span>'], c: 1 },
+                { t: 'Logaritmo natural', q: '¿Cuál es el resultado de <span class="math">∫ 2/x dx</span>?', o: ['<span class="math">2ln|x| + C</span>', '<span class="math">ln|2x| + C</span>', '<span class="math">2/x² + C</span>', '<span class="math">ln|x| + C</span>'], c: 0 },
+                { t: 'Logaritmo natural', q: '¿Cuál es el resultado de <span class="math">∫ 1/(x+1) dx</span>?', o: ['<span class="math">1/(x+1)² + C</span>', '<span class="math">ln|x| + 1 + C</span>', '<span class="math">ln|x+1| + C</span>', '<span class="math">(x+1)⁻¹ + C</span>'], c: 2 },
+                { t: 'Logaritmo natural', q: '¿Cuál es el resultado de <span class="math">∫ 3/x dx</span>?', o: ['<span class="math">ln|3x| + C</span>', '<span class="math">3/x² + C</span>', '<span class="math">3ln|x| + C</span>', '<span class="math">ln|x³| + C</span>'], c: 2 },
+                { t: 'Seno y coseno', q: '¿Cuál es el resultado de <span class="math">∫ sen(x) dx</span>?', o: ['<span class="math">cos(x) + C</span>', '<span class="math">-cos(x) + C</span>', '<span class="math">sen(x) + C</span>', '<span class="math">-sen(x) + C</span>'], c: 1 },
+                { t: 'Seno y coseno', q: '¿Cuál es el resultado de <span class="math">∫ cos(x) dx</span>?', o: ['<span class="math">-sen(x) + C</span>', '<span class="math">-cos(x) + C</span>', '<span class="math">sen(x) + C</span>', '<span class="math">cos(x) + C</span>'], c: 2 },
+                { t: 'Seno y coseno', q: '¿Cuál es el resultado de <span class="math">∫ sen(2x) dx</span>?', o: ['<span class="math">2cos(2x) + C</span>', '<span class="math">-cos(2x)/2 + C</span>', '<span class="math">cos(2x) + C</span>', '<span class="math">-2cos(2x) + C</span>'], c: 1 },
+                { t: 'Seno y coseno', q: '¿Cuál es el resultado de <span class="math">∫ cos(3x) dx</span>?', o: ['<span class="math">-sen(3x)/3 + C</span>', '<span class="math">sen(3x)/3 + C</span>', '<span class="math">3sen(3x) + C</span>', '<span class="math">-3sen(3x) + C</span>'], c: 1 }
+            ];
+
+            const $ = s => document.querySelector(s);
+            const $$ = s => document.querySelectorAll(s);
+
+            const ls = $('#loginScreen'),
+                es = $('#examScreen'),
+                rs = $('#resultsScreen'),
+                cs = $('#cheaterScreen'),
+                lf = $('#loginForm'),
+                le = $('#loginError'),
+                ip = $('#inputPassword'),
+                in_ = $('#inputNombre'),
+                ia = $('#inputApellido'),
+                tb = $('#timerBar'),
+                td = $('#timerDisplay'),
+                pd = $('#progressDots'),
+                pl = $('#progressLabel'),
+                qt = $('#questionTopic'),
+                qx = $('#questionText'),
+                ol = $('#optionsList'),
+                bn = $('#btnNext'),
+                esn = $('#examStudentName'),
+                rsn = $('#resultsStudentName'),
+                rsc = $('#resultsScoreCircle'),
+                rsn_ = $('#resultsScoreNumber'),
+                rsl = $('#resultsScoreLabel'),
+                rtu = $('#resultsTimeUsed'),
+                rtb = $('#resultsTableBody'),
+                csi = $('#cheaterStudentInfo'),
+                mc = $('#mainContainer'),
+                bd = document.body;
+
+            let sn = '',
+                sa = '',
+                sfn = '',
+                sq = [],
+                ci = 0,
+                ans = [],
+                ts = _0x3c4d,
+                ti = null,
+                ea = false,
+                est = null,
+                qst = null,
+                ttu = 0;
+
+            function getCE() { try { return JSON.parse(localStorage.getItem('exam_completed') || '[]'); } catch (e) { return []; } }
+
+            function addCE(d) { const c = getCE();
+                c.push(d);
+                localStorage.setItem('exam_completed', JSON.stringify(c)); }
+
+            function getCL() { try { return JSON.parse(localStorage.getItem('exam_cheaters') || '[]'); } catch (e) { return []; } }
+
+            function addCL(d) { const c = getCL();
+                c.push(d);
+                localStorage.setItem('exam_cheaters', JSON.stringify(c)); }
+
+            function getAE() { try { return JSON.parse(localStorage.getItem('exam_active') || 'null'); } catch (e) { return null; } }
+
+            function setAE(d) { localStorage.setItem('exam_active', JSON.stringify(d)); }
+
+            function clearAE() { localStorage.removeItem('exam_active'); }
+
+            function isSC(fn) { return getCE().some(c => c.fullName.toLowerCase() === fn.toLowerCase()); }
+
+            function isCH(fn) { return getCL().some(c => c.fullName.toLowerCase() === fn.toLowerCase()); }
+
+            function sA(a) { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
+                    [b[i], b[j]] = [b[j], b[i]]; } return b; }
+
+            function shSc(scr) {
+                [ls, es, rs, cs].forEach(s => s.classList.add('hidden'));
+                if (scr) scr.classList.remove('hidden');
+            }
+
+            function trCh(reason) {
+                if (!ea && !getAE()) return;
+                ea = false;
+                clT();
+                const fn = sfn || (getAE() ? getAE().fullName : 'Desconocido');
+                addCL({ fullName: fn, nombre: sn || '', apellido: sa || '', date: new Date().toISOString(), reason: reason });
+                clearAE();
+                csi.textContent = 'Estudiante: ' + fn + ' | Motivo: ' + reason;
+                shSc(cs);
+                bd.classList.add('cheater-mode');
+                mc.style.animation = 'shake 0.6s';
+                setTimeout(() => { mc.style.animation = ''; }, 600);
+            }
+
+            function ac() {
+                document.addEventListener('visibilitychange', () => { if (document.hidden && ea) trCh('Cambio de pestaña detectado'); });
+                window.addEventListener('blur', () => { if (ea) { setTimeout(() => { if (ea && document.hidden) trCh('La ventana perdió el foco'); }, 300); } });
+                window.addEventListener('beforeunload', (e) => { if (ea) { setAE({ fullName: sfn, nombre: sn, apellido: sa, timestamp: new Date().toISOString(), interrupted: true });
+                        e.preventDefault();
+                        e.returnValue = 'Si cierras la página, serás reprobado automáticamente.'; return e.returnValue; } });
+                document.addEventListener('contextmenu', (e) => { if (ea) { e.preventDefault();
+                        trCh('Intento de menú contextual detectado'); } });
+                document.addEventListener('keydown', (e) => { if (ea && (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e
+                            .key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U') || (e.ctrlKey && e.key === 's') || (e
+                            .ctrlKey && e.key === 'S'))) { e.preventDefault();
+                        trCh('Intento de usar herramientas de desarrollador'); } });
+            }
+
+            function clT() { if (ti) { clearInterval(ti);
+                    ti = null; } }
+
+            function upTD() { const m = Math.floor(ts / 60),
+                    s = ts % 60;
+                td.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                tb.classList.remove('warning', 'danger'); if (ts <= 30) tb.classList.add('danger'); else if (ts <= 120) tb.classList.add(
+                    'warning'); }
+
+            function stT() { clT();
+                ts = _0x3c4d;
+                qst = Date.now();
+                upTD();
+                ti = setInterval(() => { ts--;
+                    upTD(); if (ts <= 0) { clT();
+                        hTU(); } }, 1000); }
+
+            function hTU() { if (ans[ci] === undefined || ans[ci] === null) ans[ci] = -1;
+                upPD(ci, 'expired');
+                ttu += _0x3c4d; if (ci < _0x5e6f - 1) { ci++;
+                    ldQ(ci); } else finEx(); }
+
+            function selQ() { return sA(_0x9c0d).slice(0, _0x5e6f); }
+
+            function ldQ(i) { clT(); const q = sq[i];
+                qt.textContent = q.t;
+                qx.innerHTML = q.q;
+                ol.innerHTML = '';
+                const letters = ['A', 'B', 'C', 'D'];
+                q.o.forEach((opt, idx) => { const li = document.createElement('li');
+                    li.className = 'option-item';
+                    li.innerHTML = '<span class="option-letter">' + letters[idx] + '</span><span class="option-text">' + opt +
+                        '</span>';
+                    li.addEventListener('click', () => selOp(idx)); if (ans[i] === idx) li.classList.add('selected');
+                    ol.appendChild(li); });
+                bn.disabled = !(ans[i] >= 0); if (ans[i] >= 0) { const sel = ol.children[ans[i]]; if (sel) sel.classList.add('selected'); }
+                upAPD();
+                pl.textContent = (i + 1) + ' / ' + _0x5e6f;
+                stT(); }
+
+            function selOp(idx) { if (!ea) return;
+                Array.from(ol.children).forEach(li => li.classList.remove('selected'));
+                ol.children[idx].classList.add('selected');
+                ans[ci] = idx;
+                bn.disabled = false; }
+
+            function upPD(i, st) { const dots = pd.children; if (dots[i]) { dots[i].classList.remove('active', 'answered', 'expired'); if (
+                        st === 'active') dots[i].classList.add('active'); if (st === 'answered') dots[i].classList.add(
+                        'answered'); if (st === 'expired') dots[i].classList.add('expired'); } }
+
+            function upAPD() { for (let i = 0; i < _0x5e6f; i++) { const d = pd.children[i]; if (!d) continue;
+                    d.classList.remove('active', 'answered', 'expired'); if (i === ci) d.classList.add('active'); else if (ans[i] >=
+                        0) d.classList.add('answered'); else if (ans[i] === -1) d.classList.add('expired'); } }
+
+            function bPD() { pd.innerHTML = ''; for (let i = 0; i < _0x5e6f; i++) { const dot = document.createElement('span');
+                    dot.className = 'progress-dot';
+                    dot.textContent = i + 1;
+                    pd.appendChild(dot); } }
+
+            function stEx() { sfn = (sn + ' ' + sa).trim();
+                esn.textContent = 'Estudiante: ' + sfn;
+                sq = selQ();
+                ci = 0;
+                ans = new Array(_0x5e6f).fill(null);
+                ttu = 0;
+                ea = true;
+                est = Date.now();
+                setAE({ fullName: sfn, nombre: sn, apellido: sa, timestamp: new Date().toISOString(), interrupted: false });
+                bPD();
+                shSc(es);
+                ldQ(0); }
+
+            function nxtQ() { if (!ea) return;
+                const spent = _0x3c4d - ts;
+                ttu += spent;
+                clT(); if (ans[ci] === null || ans[ci] === undefined) { ans[ci] = -1;
+                    upPD(ci, 'expired'); } else upPD(ci, 'answered'); if (ci < _0x5e6f - 1) { ci++;
+                    ldQ(ci); } else finEx(); }
+
+            function finEx() { ea = false;
+                clT(); if (ans[ci] === null || ans[ci] === undefined) { const spent = _0x3c4d - ts;
+                    ttu += Math.max(0, spent); }
+                upAPD();
+                clearAE();
+                calcRes(); }
+
+            function calcRes() { let corr = 0; const rows = []; for (let i = 0; i < _0x5e6f; i++) { const q = sq[i]; const sa_ = ans[i]; const
+                        isC = (sa_ === q.c); if (isC) corr++;
+                    const stAns = sa_ >= 0 ? stH(q.o[sa_]) : '(Sin responder)';
+                    const coAns = stH(q.o[q.c]);
+                    rows.push({ n: i + 1, topic: q.t, sAns: stAns, cAns: coAns, isC: isC }); } const perc = Math.round((corr / _0x5e6f) *
+                        100); const pass = corr >= _0x7a8b;
+                rsn.textContent = 'Estudiante: ' + sfn;
+                rsn_.textContent = corr + '/10';
+                rsl.textContent = perc + '% - ' + (pass ? 'APROBADO ✓' : 'NO APROBADO ✗');
+                rsc.classList.remove('pass', 'fail');
+                rsc.classList.add(pass ? 'pass' : 'fail'); const mu = Math.floor(ttu / 60),
+                    su = ttu % 60;
+                rtu.textContent = 'Tiempo total utilizado: ' + mu + ' min ' + su + ' seg';
+                rtb.innerHTML = '';
+                rows.forEach(r => { const tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + r.n + '</td><td>' + r.topic + '</td><td>' + r.sAns + '</td><td>' + r.cAns +
+                        '</td><td class="result-icon ' + (r.isC ? 'correct' : 'wrong') + '">' + (r.isC ? '✓' : '✗') +
+                        '</td>';
+                    rtb.appendChild(tr); });
+                addCE({ fullName: sfn, nombre: sn, apellido: sa, score: corr, total: _0x5e6f, percent: perc, passed: pass, date: new Date()
+                        .toISOString(), timeUsed: ttu });
+                shSc(rs);
+                window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+            function stH(h) { const t = document.createElement('div');
+                t.innerHTML = h; return t.textContent || t.innerText || ''; }
+            window.resetExamLock = function() { const tp = prompt(
+                    '🔓 Restablecer bloqueo de examen\n\nIngresa la contraseña del maestro para limpiar todos los registros:', '');
+                if (tp === _0x1a2b) { localStorage.removeItem('exam_completed');
+                    localStorage.removeItem('exam_cheaters');
+                    localStorage.removeItem('exam_active');
+                    alert('✅ Todos los registros han sido limpiados. La página se recargará.');
+                    location.reload(); } else if (tp !== null) { alert('❌ Contraseña incorrecta. No se realizaron cambios.'); } };
+
+            function init() { ac();
+                shSc(ls);
+                bd.classList.remove('cheater-mode'); const ae = getAE(); if (ae && ae.interrupted) { const fn = ae.fullName ||
+                        'Desconocido';
+                    addCL({ fullName: fn, nombre: ae.nombre || '', apellido: ae.apellido || '', date: new Date().toISOString(),
+                        reason: 'Cierre de página durante el examen' });
+                    clearAE();
+                    csi.textContent = 'Estudiante: ' + fn +
+                        ' | Motivo: La página fue cerrada durante un examen activo.';
+                    shSc(cs);
+                    bd.classList.add('cheater-mode'); } }
+            lf.addEventListener('submit', function(e) { e.preventDefault(); const pw = ip.value.trim(),
+                    nm = in_.value.trim(),
+                    ap = ia.value.trim(); if (pw !== _0x1a2b) { le.textContent = '❌ Contraseña incorrecta. Intenta de nuevo.';
+                    le.classList.remove('hidden');
+                    ip.value = '';
+                    ip.focus(); return; } if (!nm || !ap) { le.textContent =
+                        '❌ Debes ingresar tu nombre y apellido completos.';
+                    le.classList.remove('hidden'); return; } if (nm.length < 2 || ap.length < 2) { le.textContent =
+                        '❌ El nombre y apellido deben tener al menos 2 caracteres cada uno.';
+                    le.classList.remove('hidden'); return; } const fn = (nm + ' ' + ap).trim(); if (isSC(fn)) { le.textContent =
+                        '⚠️ Este nombre ya ha sido registrado con un examen completado. No puedes hacer el examen dos veces.';
+                    le.classList.remove('hidden'); return; } if (isCH(fn)) { le.textContent =
+                        '🚫 Este nombre está registrado con una infracción previa. Favor de pasar con tu maestro.';
+                    le.classList.remove('hidden'); return; } const ae = getAE(); if (ae && !ae.interrupted) { le.textContent =
+                        '⚠️ Hay un examen en curso con otro estudiante. Espera a que termine o contacta a tu maestro.';
+                    le.classList.remove('hidden'); return; }
+                le.classList.add('hidden');
+                sn = nm;
+                sa = ap;
+                stEx(); });
+            bn.addEventListener('click', function() { if (!ea || bn.disabled) return;
+                nxtQ(); });
+            document.addEventListener('keydown', function(e) { if (e.key === 'Enter' && ea && !bn.disabled) { e.preventDefault();
+                    nxtQ(); } });
+            init();
+        })();
+    </script>
+</body>
+</html>
